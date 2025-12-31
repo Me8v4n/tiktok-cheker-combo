@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Pro Combo Checker</title>
+    <style>
+        :root {
+            --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success: linear-gradient(135deg, #00d4aa 0%, #00e6b3 100%);
+            --danger: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+            --warning: linear-gradient(135deg, #ffa726 0%, #ffb74d 100%);
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --shadow: 0 25px 50px rgba(0,0,0,0.15);
+            --glass: rgba(255,255,255,0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            direction: rtl;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass);
+        }
+
+        .header h1 {
+            background: var(--primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -2px;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            height: calc(100vh - 200px);
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        .upload-panel {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass);
+            height: fit-content;
+        }
+
+        .upload-panel h2 {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .file-upload {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #comboFile {
+            display: none;
+        }
+
+        .upload-zone {
+            width: 100%;
+            height: 200px;
+            border: 3px dashed rgba(255,255,255,0.4);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-5px);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: white;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,212,170,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0,212,170,0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.4s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 15px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .stats-panel {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            height: fit-content;
+        }
+
+        .stats-panel h3 {
+            color: white;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateX(-5px);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: rgba(255,255,255,0.9);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .results-panel {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 0;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass);
+            overflow: hidden;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-header {
+            background: var(--dark);
+            color: white;
+            padding: 25px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .live-status {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        .status-checking { background: var(--warning); color: white; }
+        .status-valid { background: var(--success); color: white; }
+        .status-invalid { background: var(--danger); color: white; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .results-table {
+            flex: 1;
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--dark);
+            color: white;
+            padding: 20px;
+            text-align: right;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.2s ease;
+        }
+
+        tr:hover td {
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.01);
+        }
+
+        .status-badge {
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-valid {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-invalid {
+            background: var(--danger);
+            color: white;
+        }
+
+        .password {
+            font-family: monospace;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header, .upload-panel, .stats-panel, .results-panel { padding: 20px; margin-bottom: 15px; }
+            .main-grid { grid-template-columns: 1fr; }
+            table { font-size: 0.85rem; }
+            th, td { padding: 12px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🕵️ TikTok Pro Checker</h1>
+            <p>ئەوتۆماتیکی فحصکردنی Combo List - Professional Edition</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="upload-panel">
+                <h2>📁 بارکردنەوەی Combo File</h2>
+                <div class="file-upload">
+                    <label for="comboFile" class="upload-zone" id="uploadZone">
+                        <div class="upload-icon">📤</div>
+                        <div class="upload-text">فاڵی user:pass یان email:pass بکەرە سەرەوە</div>
+                        <div class="upload-subtext">فرمت: هەر هێڵێک لە خطێکدا (.txt)</div>
+                    </label>
+                    <input type="file" id="comboFile" accept=".txt" required>
+                    <button class="btn" id="uploadBtn">🚀 دەستپێکردن</button>
+                    
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-panel">
+                <h3>📊 ستاتیستیکەکان</h3>
+                <div class="stat-item">
+                    <span class="stat-value" id="totalCombos">0</span>
+                    <span class="stat-label">کۆی گشتی</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="validCombos">0</span>
+                    <span class="stat-label">✅ دروست</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="invalidCombos">0</span>
+                    <span class="stat-label">❌ نادرست</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="checkingCombos">0</span>
+                    <span class="stat-label">⏳ لە فحصدا</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-panel">
+            <div class="results-header">
+                <div class="results-title">🎯 ئەنجامەکانی فحص</div>
+                <div class="live-status status-checking" id="liveStatus">چاوەڕوانی...</div>
+            </div>
+            <div class="results-table">
+                <table id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>Email/User</th>
+                            <th>Password</th>
+                            <th>ئەنجام</th>
+                            <th>کات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <div class="empty-icon">📋</div>
+                                <div>هیچ comboیەک نەبووەتەوە - فاڵێک بار بکە</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TikTokChecker {
+            constructor() {
+                this.totalCombos = 0;
+                this.validCombos = 0;
+                this.invalidCombos = 0;
+                this.checkingCombos = 0;
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.updateStats();
+                this.loadResults();
+                setInterval(() => this.loadResults(), 1500);
+            }
+
+            bindEvents() {
+                const fileInput = document.getElementById('comboFile');
+                const uploadZone = document.getElementById('uploadZone');
+                const uploadBtn = document.getElementById('uploadBtn');
+
+                // Drag & Drop
+                uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.add('dragover');
+                });
+
+                uploadZone.addEventListener('dragleave', () => {
+                    uploadZone.classList.remove('dragover');
+                });
+
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        this.updateUploadText(files[0].name);
+                    }
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files[0]) {
+                        this.updateUploadText(e.target.files[0].name);
+                    }
+                });
+
+                uploadBtn.addEventListener('click', () => this.uploadFile());
+            }
+
+            updateUploadText(filename) {
+                document.querySelector('.upload-text').textContent = `✅ ${filename} هەڵبژێردراوە`;
+                document.querySelector('.upload-subtext').textContent = 'دەستپێکردن بکە!';
+            }
+
+            async uploadFile() {
+                const fileInput = document.getElementById('comboFile');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    this.showNotification('فاڵێک هەڵبژێرە!', 'error');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('combo_file', file);
+
+                this.setLoading(true);
+                
+                try {
+                    const response = await fetch('upload.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.totalCombos = result.total;
+                        this.showNotification(`${result.total} combo بار کرا!`, 'success');
+                        this.loadResults();
+                    } else {
+                        this.showNotification('هەڵە: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    this.showNotification('هەڵەیەک روویدا: ' + error.message, 'error');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            setLoading(loading) {
+                const btn = document.getElementById('uploadBtn');
+                const progressContainer = document.getElementById('progressContainer');
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+
+                btn.disabled = loading;
+                progressContainer.style.display = loading ? 'block' : 'none';
+                
+                if (loading) {
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += Math.random() * 15;
+                        if (progress > 90) progress = 90;
+                        progressFill.style.width = progress + '%';
+                        progressText.textContent = Math.round(progress) + '%';
+                        
+                        if (!loading) {
+                            clearInterval(interval);
+                            progressFill.style.width = '100%';
+                            progressText.textContent = '100% ✅';
+                        }
+                    }, 200);
+                }
+            }
+
+            async loadResults() {
+                try {
+                    const response = await fetch('get_results.php');
+                    const results = await response.json();
+                    
+                    this.renderResults(results);
+                    this.updateLiveStatus();
+                } catch (error) {
+                    console.error('هەڵە لە بارکرنی ئەنجامەکان:', error);
+                }
+            }
+
+            renderResults(results) {
+                const tbody = document.getElementById('resultsBody');
+                const emptyState = tbody.querySelector('.empty-state');
+                
+                if (results.length === 0) {
+                    if (!emptyState) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="empty-state">
+                                    <div class="empty-icon">📋</div>
+                                    <div>هیچ comboیەک نەبووەتەوە - فاڵێک بار بکە</div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    return;
+                }
+
+                if (emptyState) emptyState.remove();
+
+                tbody.innerHTML = results.map(result => `
+                    <tr>
+                        <td>${this.escapeHtml(result.email_or_user)}</td>
+                        <td><code class="password">${this.escapeHtml(result.password)}</code></td>
+                        <td><span class="status-badge badge-${result.status}">${result.status === 'valid' ? '✅ دروست' : '❌ نادرست'}</span></td>
+                        <td>${result.checked_at ? new Date(result.checked_at).toLocaleString('ku-IQ') : '⏳'}</td>
+                    </tr>
+                `).join('');
+
+                // Update counters
+                this.validCombos = results.filter(r => r.status === 'valid').length;
+                this.invalidCombos = results.filter(r => r.status === 'invalid').length;
+                this.checkingCombos = results.filter(r => r.status === 'pending').length;
+                this.totalCombos = results.length;
+                this.updateStats();
+            }
+
+            updateStats() {
+                document.getElementById('totalCombos').textContent = this.totalCombos.toLocaleString();
+                document.getElementById('validCombos').textContent = this.validCombos.toLocaleString();
+                document.getElementById('invalidCombos').textContent = this.invalidCombos.toLocaleString();
+                document.getElementById('checkingCombos').textContent = this.checkingCombos.toLocaleString();
+            }
+
+            updateLiveStatus() {
+                const liveStatus = document.getElementById('liveStatus');
+                if (this.checkingCombos > 0) {
+                    liveStatus.textContent = `⏳ ${this.checkingCombos} لە فحصدا`;
+                    liveStatus.className = 'live-status status-checking';
+                } else if (this.validCombos > 0) {
+                    liveStatus.textContent = `✅ ${this.validCombos} دروست دۆزینەوە`;
+                    liveStatus.className = 'live-status status-valid';
+                } else {
+                    liveStatus.textContent = 'چاوەڕوانی...';
+                    liveStatus.className = 'live-status status-checking';
+                }
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            showNotification(message, type) {
+                // Simple notification - can be enhanced with toast
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: ${type === 'success' ? '#00d4aa' : '#ff6b6b'};
+                    color: white;
+                    padding: 15px 30px;
+                    border-radius: 10px;
+                    z-index: 10000;
+                    font-weight: 600;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 4000);
+            }
+        }
+
+        // Initialize app
+        new TikTokChecker();
+    </script>
+</body>
+</html>
